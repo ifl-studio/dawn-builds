@@ -59,7 +59,7 @@ jobs:
           echo "Clean up debug build to free up space"
           rm -rf out
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
-          ninja -v -C out
+          ninja -v -C out dawn_native dawn_platform dawn_proc dawn_wire
 
       - name: Upload Headers
         uses: actions/upload-artifact@v2
