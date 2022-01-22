@@ -1,8 +1,6 @@
 # Global Settings
 env:
   MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
-  DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
-  DEPOT_TOOLS_WIN_TOOLCHAIN: 0
 
 name: Build Google Dawn
 on: [push]
@@ -17,8 +15,15 @@ jobs:
           - target_os: win
             arch: x64
             msvc_arch: amd64_x86
+            custom_gnargs: is_clang=false
             gclient_os: '["win"]'
             os: windows-latest
+    env:
+      DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
+      DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }}'
+      GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
+
     steps:
       - uses: actions/checkout@v2
       - name: Setup MSVC environment
@@ -47,7 +52,17 @@ jobs:
         run: |
           gclient sync
 
+      - name: Build - Release
+        shell: bash
+        working-directory: out/src
+        run: |
+          echo "Clean up debug build to free up space"
+          rm -rf out
+          gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
+          ninja -v -C out dawn
+
       - name: Cleanup space
         shell: bash
         run: |
           rm -rf out
+      
