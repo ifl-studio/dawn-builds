@@ -61,6 +61,14 @@ jobs:
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
           ninja -v -C out
 
+      - name: Upload Headers
+        uses: actions/upload-artifact@v2
+        with:
+          name: headers
+          path: | 
+            out/src/include/
+            out/gen/src/include/
+
       - name: Cleanup space
         shell: bash
         run: |
