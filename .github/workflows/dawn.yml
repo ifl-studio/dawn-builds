@@ -59,7 +59,7 @@ jobs:
           echo "Clean up debug build to free up space"
           rm -rf out
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
-          ninja -v -C out dawn
+          ninja -v -C out
 
       - name: Cleanup space
         shell: bash
