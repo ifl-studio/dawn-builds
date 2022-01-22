@@ -61,18 +61,29 @@ jobs:
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
           ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared
 
-      - name: Upload Headers
-        uses: actions/upload-artifact@v2
-        with:
-          name: headers
-          path: | 
-            out/src/include/
-            out/gen/src/include/
-
-      - name: Print test
+      - name: Pack files
         shell: bash
         run: |
-          ls -R out
+          mkdir -p output/include
+          mkdir -p output/lib
+          mv -v out/gen/src/include/* output/include
+          mv -v out/src/include/* output/include
+          mv -v out/src/out/dawn_native.* output/lib
+          mv -v out/src/out/dawn_platform.* output/lib
+          mv -v out/src/out/dawn_proc.* output/lib
+          mv -v out/src/out/dawn_wire.* output/lib
+          tar -C output -v -czf output.tar.gz lib include
+
+      - name: Upload output
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target_os }}_${{ matrix.msvc_arch }}
+          path: output.tar.gz
+
+      - name: Print out
+        shell: bash
+        run: |
+          ls -R out/src/out
 
       - name: Cleanup space
         shell: bash
