@@ -26,3 +26,26 @@ jobs:
           '${{ env.MSVC_PATH }}\Auxiliary\Build\vcvarsall.bat' ${{ matrix.msvc_arch }}
           MSVC_TOOLS=$(find '${{ env.MSVC_PATH }}\Tools\MSVC' -maxdepth 1 -type d | sort -r | head -n 1)
           echo ${MSVC_TOOLS}'\bin\Hostx64\x64\' >> $GITHUB_PATH
+      - name: Install depot tools
+        shell: bash
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $DEPOT_TOOLS
+          echo $DEPOT_TOOLS >> $GITHUB_PATH
+      - name: Setup gclient build config
+        shell: bash
+        run: |
+          # Create config
+          mkdir out
+          cp gclient out/.gclient
+          echo 'target_os = ${{ matrix.gclient_os }}' >> out/.gclient
+
+      - name: Sync Dawn
+        shell: bash
+        working-directory: out
+        run: |
+          gclient sync
+
+      - name: Cleanup space
+        shell: bash
+        run: |
+          rm -rf out
