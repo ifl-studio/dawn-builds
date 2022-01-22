@@ -1,17 +1,28 @@
-name: GitHub Actions Demo
+# Global Settings
+env:
+  MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
+
+name: Build Google Dawn
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
-    runs-on: ubuntu-latest
+  build:
+    name: "Build Dawn"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # Windows
+          - target_os: win
+            arch: x64
+            msvc_arch: amd64_x86
+            gclient_os: '["win"]'
+            os: windows-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+      - uses: actions/checkout@v2
+      - name: Setup MSVC environment
+        if: ${{ matrix.target_os == 'win' }}
+        shell: bash
         run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          '${{ env.MSVC_PATH }}\Auxiliary\Build\vcvarsall.bat' ${{ matrix.msvc_arch }}
+          MSVC_TOOLS=$(find '${{ env.MSVC_PATH }}\Tools\MSVC' -maxdepth 1 -type d | sort -r | head -n 1)
+          echo ${MSVC_TOOLS}'\bin\Hostx64\x64\' >> $GITHUB_PATH
