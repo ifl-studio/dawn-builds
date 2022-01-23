@@ -66,12 +66,12 @@ jobs:
         run: |
           mkdir -p output/include
           mkdir -p output/lib
-          mv -v out/src/out/gen/src/include/* output/include
-          mv -v out/src/include/* output/include
-          mv -v out/src/out/dawn_native.* output/lib
-          mv -v out/src/out/dawn_platform.* output/lib
-          mv -v out/src/out/dawn_proc.* output/lib
-          mv -v out/src/out/dawn_wire.* output/lib
+          cp -v -rf out/src/out/gen/src/include/* output/include
+          cp -v -rf out/src/include/* output/include
+          cp -v -rf out/src/out/*dawn_native.* output/lib
+          cp -v -rf out/src/out/*dawn_platform.* output/lib
+          cp -v -rf out/src/out/*dawn_proc.* output/lib
+          cp -v -rf out/src/out/*dawn_wire.* output/lib
           tar -C output -v -czf output.tar.gz lib include
 
       - name: Print output
