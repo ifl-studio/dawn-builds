@@ -11,6 +11,12 @@ jobs:
     strategy:
       matrix:
         include:
+          # Linux
+          - target_os: linux
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false use_glib=false
+            gclient_os: '["linux"]'
+            os: ubuntu-latest
           # Windows
           - target_os: win
             arch: x64
@@ -23,6 +29,7 @@ jobs:
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
       GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }}'
       GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
+      OUTPUT_FILENAME: ${{ matrix.target_os }}_${{ matrix.arch }}.tar.gz
 
     steps:
       - uses: actions/checkout@v2
@@ -33,11 +40,19 @@ jobs:
           '${{ env.MSVC_PATH }}\Auxiliary\Build\vcvarsall.bat' ${{ matrix.msvc_arch }}
           MSVC_TOOLS=$(find '${{ env.MSVC_PATH }}\Tools\MSVC' -maxdepth 1 -type d | sort -r | head -n 1)
           echo ${MSVC_TOOLS}'\bin\Hostx64\x64\' >> $GITHUB_PATH
+
+      - name: Install Linux dependencies
+        if: ${{ matrix.target_os == 'linux' }}
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get install pkg-config clang gcc gcc-multilib g++ g++-multilib
+
       - name: Install depot tools
         shell: bash
         run: |
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $DEPOT_TOOLS
           echo $DEPOT_TOOLS >> $GITHUB_PATH
+
       - name: Setup gclient build config
         shell: bash
         run: |
@@ -52,6 +67,34 @@ jobs:
         run: |
           gclient sync
 
+      - name: Create output directory
+        shell: bash
+        run: |
+          mkdir -p output/include
+          mkdir -p output/lib/Release
+          mkdir -p output/lib/Debug
+
+      - name: Build - Debug
+        shell: bash
+        working-directory: out/src
+        run: |
+          gn gen out --args="${{ env.GNARGS }}"
+          ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared
+
+      - name: Pack - Headers
+        shell: bash
+        run: |
+          cp -v -rf out/src/out/gen/src/include/* output/include
+          cp -v -rf out/src/include/* output/include
+
+      - name: Pack - Debug
+        shell: bash
+        run: |
+          cp -v -rf out/src/out/*dawn_native.* output/lib/Debug
+          cp -v -rf out/src/out/*dawn_platform.* output/lib/Debug
+          cp -v -rf out/src/out/*dawn_proc.* output/lib/Debug
+          cp -v -rf out/src/out/*dawn_wire.* output/lib/Debug
+
       - name: Build - Release
         shell: bash
         working-directory: out/src
@@ -61,30 +104,49 @@ jobs:
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
           ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared
 
-      - name: Pack files
+      - name: Pack - Release
         shell: bash
         run: |
-          mkdir -p output/include
-          mkdir -p output/lib
-          cp -v -rf out/src/out/gen/src/include/* output/include
-          cp -v -rf out/src/include/* output/include
-          cp -v -rf out/src/out/*dawn_native.* output/lib
-          cp -v -rf out/src/out/*dawn_platform.* output/lib
-          cp -v -rf out/src/out/*dawn_proc.* output/lib
-          cp -v -rf out/src/out/*dawn_wire.* output/lib
-          tar -C output -v -czf output.tar.gz lib include
+          cp -v -rf out/src/out/*dawn_native.* output/lib/Release
+          cp -v -rf out/src/out/*dawn_platform.* output/lib/Release
+          cp -v -rf out/src/out/*dawn_proc.* output/lib/Release
+          cp -v -rf out/src/out/*dawn_wire.* output/lib/Release
 
       - name: Print output
         shell: bash
         run: |
           ls -R output
 
-      - name: Upload output
+      - name: Create Tar File
+        shell: bash
+        run: |
+          tar -C output -v -czf ${{ env.OUTPUT_FILENAME }} lib include
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.target_os }}_${{ matrix.msvc_arch }}
-          path: output.tar.gz
+          name: matrix-output
+          path: ${{ env.OUTPUT_FILENAME }}
 
+      - name: Cleanup space
+        shell: bash
+        run: |
+          rm -rf out
+  release:
+    name: "Publish to release"
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: matrix-output
+          path: out
+
+      - name: Publish to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: out/*
+          
       - name: Cleanup space
         shell: bash
         run: |
