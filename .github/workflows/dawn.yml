@@ -18,13 +18,17 @@ jobs:
     outputs:
       revision: ${{ steps.config.outputs.revision }}
     steps:
-      - name: Configure shared properties.
-        id: config
+      - name: Find revision
         shell: bash
         run: |
           echo "REVISION=$(git ls-remote ${{ env.DAWN_URL }} --heads ${{ env.DAWN_BRANCH }} | head -n 1 | cut -f 1)" >> $GITHUB_ENV
+      - name: Configure properties
+        id: config
+        shell: bash
+        run: |
           echo "REVISION: ${{ env.REVISION }}"
           echo "::set-output name=revision::${{ env.REVISION }}"
+
 
   build:
     name: "Build Dawn"
