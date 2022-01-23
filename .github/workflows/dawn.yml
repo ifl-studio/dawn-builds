@@ -23,12 +23,12 @@ jobs:
         id: config
         shell: bash
         run: |
-          REVISION=$(git ls-remote ${{ env.DAWN_URL }} --heads ${{ env.DAWN_BRANCH }} | head -n 1 | cut -f 1)
-          INTERNAL=$(curl --silent ${{ env.DAWN_URL }}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#' | cut -c1-7)
-          NAME="dawn-${INTERNAL}-${REVISION:0:7}"
+          echo "REVISION=$(git ls-remote $DAWN_URL --heads $DAWN_BRANCH | head -n 1 | cut -f 1)" >> $GITHUB_ENV
+          echo "INTERNAL=$(curl --silent ${DAWN_URL}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#' | cut -c1-7)" >> $GITHUB_ENV
+          echo "NAME=dawn-${INTERNAL}-${REVISION:0:7}" >> $GITHUB_ENV
 
-          echo "Repository: ${{ env.DAWN_URL }}"
-          echo "Branch: ${{ env.DAWN_BRANCH }}"
+          echo "Repository: ${DAWN_URL}"
+          echo "Branch: ${DAWN_BRANCH}"
           echo "Revision: ${REVISION}"
           echo "Internal revision: ${INTERNAL}"
           echo "Output: ${NAME}"
