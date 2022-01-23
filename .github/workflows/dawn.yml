@@ -1,12 +1,44 @@
 # Global Settings
 env:
+  DAWN_BRANCH: chromium/4848
+  DAWN_URL: https://dawn.googlesource.com/dawn
   MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
 
 name: Build Google Dawn
-on: [push]
+
+on:
+  push:
+    tags:        
+      - '**'   
+
 jobs:
+  config:
+    name: "Find git revision"
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.config.outputs.revision }}
+      name: ${{ steps.config.outputs.name }}
+    steps:
+      - name: Configure shared properties.
+        id: config
+        shell: bash
+        run: |
+          REVISION=$(git ls-remote $DAWN_URL --heads $DAWN_BRANCH | head -n 1 | cut -f 1)
+          INTERNAL=$(curl --silent ${DAWN_URL}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#' | cut -c1-7)
+          NAME="dawn-${INTERNAL}-${REVISION:0:7}"
+
+          echo "Repository: ${DAWN_URL}"
+          echo "Branch: ${DAWN_BRANCH}"
+          echo "Revision: ${REVISION}"
+          echo "Internal revision: ${INTERNAL}"
+          echo "Output: ${NAME}"
+
+          echo "::set-output name=revision::${REVISION}"
+          echo "::set-output name=name::${NAME}"
+
   build:
     name: "Build Dawn"
+    needs: config
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -65,7 +97,7 @@ jobs:
         shell: bash
         working-directory: out
         run: |
-          gclient sync
+          gclient sync --verbose --revision ${{ needs.config.outputs.revision }}
 
       - name: Create output directory
         shell: bash
@@ -135,7 +167,7 @@ jobs:
   release:
     name: "Publish to release"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [config, build]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -147,6 +179,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: out/*
+          body: |
+            ## ${{ env.DAWN_BRANCH }}
+            ${{ env.DAWN_URL }}
+            ${{ needs.config.outputs.name }}
           
       - name: Cleanup space
         shell: bash
