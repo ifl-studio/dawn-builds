@@ -23,7 +23,7 @@ jobs:
         id: config
         shell: bash
         run: |
-          echo "REVISION=$(git ls-remote $DAWN_URL --heads $DAWN_BRANCH | head -n 1 | cut -f 1)" >> $GITHUB_ENV
+          echo "REVISION=$(git ls-remote ${DAWN_URL} --heads ${DAWN_BRANCH} | head -n 1 | cut -f 1)" >> $GITHUB_ENV
           echo "INTERNAL=$(curl --silent ${DAWN_URL}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#' | cut -c1-7)" >> $GITHUB_ENV
           echo "NAME=dawn-${INTERNAL}-${REVISION:0:7}" >> $GITHUB_ENV
 
