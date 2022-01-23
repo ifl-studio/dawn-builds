@@ -1,15 +1,15 @@
+name: Build Google Dawn
+on:
+  push:
+    tags:        
+      - '**'   
+
 # Global Settings
 env:
   DAWN_BRANCH: chromium/4848
   DAWN_URL: https://dawn.googlesource.com/dawn
   MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
 
-name: Build Google Dawn
-
-on:
-  push:
-    tags:        
-      - '**'   
 
 jobs:
   config:
@@ -17,24 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       revision: ${{ steps.config.outputs.revision }}
-      name: ${{ steps.config.outputs.name }}
     steps:
       - name: Configure shared properties.
         id: config
         shell: bash
         run: |
-          echo "REVISION=$(git ls-remote ${DAWN_URL} --heads ${DAWN_BRANCH} | head -n 1 | cut -f 1)" >> $GITHUB_ENV
-          echo "INTERNAL=$(curl --silent ${DAWN_URL}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#' | cut -c1-7)" >> $GITHUB_ENV
-          echo "NAME=dawn-${INTERNAL}-${REVISION:0:7}" >> $GITHUB_ENV
-
-          echo "Repository: ${DAWN_URL}"
-          echo "Branch: ${DAWN_BRANCH}"
-          echo "Revision: ${REVISION}"
-          echo "Internal revision: ${INTERNAL}"
-          echo "Output: ${NAME}"
-
+          echo "REVISION=$(git ls-remote ${{ env.DAWN_URL }} --heads ${{ env.DAWN_BRANCH }} | head -n 1 | cut -f 1)" >> $GITHUB_ENV
           echo "::set-output name=revision::${REVISION}"
-          echo "::set-output name=name::${NAME}"
 
   build:
     name: "Build Dawn"
@@ -182,7 +171,7 @@ jobs:
           body: |
             ## ${{ env.DAWN_BRANCH }}
             ${{ env.DAWN_URL }}
-            ${{ needs.config.outputs.name }}
+            ${{ needs.config.outputs.revision }}
           
       - name: Cleanup space
         shell: bash
