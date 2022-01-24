@@ -8,7 +8,7 @@ on:
 env:
   DAWN_BRANCH: chromium/4848
   DAWN_URL: https://dawn.googlesource.com/dawn
-  MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC'
+  MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
 
 
 jobs:
@@ -92,17 +92,17 @@ jobs:
             custom_gnargs: is_clang=false
             gclient_os: '["win"]'
             msvc_arch: amd64_x86
-            os: windows-2022
+            os: windows-latest
           - target_os: win
             arch: x64
             msvc_arch: amd64_x86
             custom_gnargs: is_clang=false
             gclient_os: '["win"]'
-            os: windows-2022
+            os: windows-latest
     env:
       DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
-      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }} dawn_use_swiftshader=false use_system_xcode=true'
+      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }} dawn_use_angle=false dawn_use_swiftshader=false use_system_xcode=true'
       GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
       OUTPUT_FILENAME: ${{ matrix.target_os }}_${{ matrix.arch }}.tar.gz
 
@@ -209,8 +209,8 @@ jobs:
           rm -rf out
   release:
     name: "Publish to release"
-    runs-on: ubuntu-latest
     if: always()
+    runs-on: ubuntu-latest
     needs: [config, build]
     steps:
       - uses: actions/checkout@v2
