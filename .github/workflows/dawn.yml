@@ -122,13 +122,6 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get install pkg-config clang gcc gcc-multilib g++ g++-multilib
 
-
-      - name: Install Linux dependencies
-        if: ${{ matrix.target_os == 'ios' }}
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get install pkg-config clang gcc gcc-multilib g++ g++-multilib
-
       - name: Install depot tools
         shell: bash
         run: |
