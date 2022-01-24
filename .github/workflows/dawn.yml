@@ -102,7 +102,7 @@ jobs:
     env:
       DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
-      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }} dawn_use_angle=false dawn_use_swiftshader=false'
+      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }} dawn_use_angle=false dawn_use_swiftshader=false use_system_xcode=true enable_java_templates=true'
       GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
       OUTPUT_FILENAME: ${{ matrix.target_os }}_${{ matrix.arch }}.tar.gz
 
@@ -154,7 +154,7 @@ jobs:
         working-directory: out/src
         run: |
           gn gen out --args="${{ env.GNARGS }}"
-          ninja -v -C out dawn_native_static dawn_platform_static dawn_proc_static dawn_wire_static
+          ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared
 
       - name: Pack - Headers
         shell: bash
