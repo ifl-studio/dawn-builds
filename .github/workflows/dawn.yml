@@ -36,6 +36,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        fail-fast: false
         include:
           # Android
           - target_os: android
@@ -67,11 +68,6 @@ jobs:
             os: macos-latest
           - target_os: ios
             arch: arm64
-            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
-            gclient_os: '["ios", "mac"]'
-            os: macos-latest
-          - target_os: ios
-            arch: x64
             custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
             gclient_os: '["ios", "mac"]'
             os: macos-latest
@@ -132,6 +128,13 @@ jobs:
 
       - name: Install Linux dependencies
         if: ${{ matrix.target_os == 'linux' }}
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get install pkg-config clang gcc gcc-multilib g++ g++-multilib
+
+
+      - name: Install Linux dependencies
+        if: ${{ matrix.target_os == 'ios' }}
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get install pkg-config clang gcc gcc-multilib g++ g++-multilib
