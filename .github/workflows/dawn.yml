@@ -102,7 +102,7 @@ jobs:
     env:
       DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
-      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }}'
+      GNARGS: 'target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }} dawn_use_angle=false dawn_use_swiftshader=false'
       GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
       OUTPUT_FILENAME: ${{ matrix.target_os }}_${{ matrix.arch }}.tar.gz
 
@@ -135,8 +135,6 @@ jobs:
           mkdir out
           cp gclient out/.gclient
           echo 'target_os = ${{ matrix.gclient_os }}' >> out/.gclient
-          echo 'dawn_use_angle=false' >> out/.gclient
-          echo 'dawn_use_swiftshader=false' >> out/.gclient
 
       - name: Sync Dawn
         shell: bash
