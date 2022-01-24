@@ -35,8 +35,8 @@ jobs:
     needs: config
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        fail-fast: false
         include:
           # Android
           - target_os: android
@@ -46,16 +46,6 @@ jobs:
             os: ubuntu-latest
           - target_os: android
             arch: arm64
-            custom_gnargs: use_custom_libcxx=false
-            gclient_os: '["android", "unix"]'
-            os: ubuntu-latest
-          - target_os: android
-            arch: x86
-            custom_gnargs: use_custom_libcxx=false
-            gclient_os: '["android", "unix"]'
-            os: ubuntu-latest
-          - target_os: android
-            arch: x64
             custom_gnargs: use_custom_libcxx=false
             gclient_os: '["android", "unix"]'
             os: ubuntu-latest
