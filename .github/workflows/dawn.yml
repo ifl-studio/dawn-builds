@@ -154,7 +154,7 @@ jobs:
         working-directory: out/src
         run: |
           gn gen out --args="${{ env.GNARGS }}"
-          ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared
+          ninja -v -C out dawn_native_static dawn_platform_static dawn_proc_static dawn_wire_static
 
       - name: Pack - Headers
         shell: bash
