@@ -37,13 +37,76 @@ jobs:
     strategy:
       matrix:
         include:
+          # Android
+          - target_os: android
+            arch: arm
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-latest
+          - target_os: android
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-latest
+          - target_os: android
+            arch: x86
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-latest
+          - target_os: android
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-latest
+
+          # iOS
+          - target_os: ios
+            arch: arm
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+          - target_os: ios
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+          - target_os: ios
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+
           # Linux
+          - target_os: linux
+            arch: x86
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["linux"]'
+            os: ubuntu-latest
           - target_os: linux
             arch: x64
             custom_gnargs: use_custom_libcxx=false use_glib=false
             gclient_os: '["linux"]'
             os: ubuntu-latest
+
+          # macOS
+          - target_os: mac
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["mac"]'
+            os: macos-latest
+          - target_os: mac
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["mac"]'
+            os: macos-latest
+          
           # Windows
+          - target_os: win
+            arch: x86
+            custom_gnargs: is_clang=false
+            gclient_os: '["win"]'
+            msvc_arch: amd64_x86
+            os: windows-latest
           - target_os: win
             arch: x64
             msvc_arch: amd64_x86
@@ -176,7 +239,7 @@ jobs:
           body: |
             ## ${{ env.DAWN_BRANCH }}
             ${{ env.DAWN_URL }}
-            ${{ needs.config.outputs.revision }}
+            Revision: ${{ needs.config.outputs.revision }}
           
       - name: Cleanup space
         shell: bash
