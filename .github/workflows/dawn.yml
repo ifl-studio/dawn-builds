@@ -177,7 +177,7 @@ jobs:
           echo "Clean up debug build to free up space"
           rm -rf out
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
-          ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared
+          ninja -v -C out dawn_native_shared dawn_platform_shared dawn_proc_shared dawn_wire_shared dawncpp
 
       - name: Pack - Release
         shell: bash
